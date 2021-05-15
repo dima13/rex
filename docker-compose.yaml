@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+    mongo:
+      image: mongo:4.4.1-bionic
+      ports:
+        - 27017:27017
+      # environment:
+      #   - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      #   - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      volumes:
+        - ./../data/mongo:/data/db
+    rabbitmq:
+      image: rabbitmq:3.8.9-management
+      ports:
+       - 5672:5672
+       - 15672:15672
+      hostname: rabbit
+      volumes:
+        - ./../data/rabbit:/var/lib/rabbitmq/mnesia/
+    redis:
+      restart: always
+      image: "redis:alpine"
+      networks:
+        - default
+      #открывать порт не безопасно, храним чувствительные данные
+      ports:
+        - '6379:6379'
+      volumes:
+        - ./../data/redis:/data
+    postgres:
+      restart: always
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "200k"
+          max-file: "10"
+      shm_size: 1g
+      image: postgres:alpine
+      ports:
+        - "5423:5432"
+      environment:
+        - DEBUG=false
+        - POSTGRES_USER=${DB_USER}
+        - POSTGRES_PASSWORD=${DB_PASSWORD}
+        - POSTGRES_DB=${DB_DATABASE}
+      networks:
+        - default
+      volumes:
+        - ./../data/postgresql:/var/lib/postgresql
+    
